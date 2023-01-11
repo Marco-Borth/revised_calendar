@@ -13,16 +13,28 @@ export class CalendarUI extends React.Component {
         }
     }
 
+    handleLeapYears(length) {
+        if (  parseInt(this.state.date.toLocaleString('en-US', {
+            year: 'numeric',
+        })) % 400 === 0 ) {
+            this.setState({length: length + 1});
+        } else if (  parseInt(this.state.date.toLocaleString('en-US', {
+            year: 'numeric',
+        })) % 100 === 0 ) {
+            this.setState({length: length});
+        } else if (  parseInt(this.state.date.toLocaleString('en-US', {
+            year: 'numeric',
+        })) % 4 !== 0 ) {
+            this.setState({length: length});
+        } else {
+            this.setState({length: length + 1});
+        }
+    }
+
     setMonthLength() {
         if ( this.state.weekSpan === 7) {
             if ( this.state.date.getMonth() === 1 ) {
-                if (  parseInt(this.state.date.toLocaleString('en-US', {
-                    year: 'numeric',
-                })) % 4 !== 0 ) {
-                    this.setState({length: 28});
-                } else {
-                    this.setState({length: 29});
-                }
+                this.handleLeapYears(28)
             } else if (
                 this.state.date.getMonth() === 3
                 || this.state.date.getMonth() === 5
@@ -34,13 +46,7 @@ export class CalendarUI extends React.Component {
             }
         } else {
             if ( this.state.date.getMonth() === 1 ) {
-                if (  parseInt(this.state.date.toLocaleString('en-US', {
-                    year: 'numeric',
-                })) % 4 !== 0 ) {
-                    this.setState({length: 35});
-                } else {
-                    this.setState({length: 36});
-                }
+                this.handleLeapYears(35)
             } else {
                 this.setState({length: 30});
             }
@@ -112,55 +118,35 @@ export class CalendarUI extends React.Component {
     }
 
     MonthHeader() {
-        const buttonStyle = { 'font-size':'24px' }
         let calDate = this.state.date;
 
         return(
             <h2>
-                <button id = "prev-year"
-                        onClick={
-                            () => {
-                                let iDate = this.state.date;
-                                iDate.setMonth(iDate.getMonth() - 12)
-                            }
-                        }
-                >
-                    <i className='fas fa-angle-double-left' style = {buttonStyle}/>
-                </button>
+                { this.renderButton("prev-year", 'double-left', -12) }
                 {" "}
-                <button id = "prev-month"
-                        onClick={
-                            () => {
-                                let iDate = this.state.date;
-                                iDate.setMonth(iDate.getMonth() - 1)
-                            }
-                        }
-                >
-                    <i className='fas fa-angle-left' style = {buttonStyle}/>
-                </button>
+                { this.renderButton("prev-month", 'left', -1) }
                 { " " + calDate.toLocaleString('en-US', { month: 'long', year: 'numeric'} )+ " " }
-                <button id = "next-month"
-                        onClick={
-                            () => {
-                                let iDate = this.state.date;
-                                iDate.setMonth(iDate.getMonth() + 1)
-                            }
-                        }
-                >
-                    <i className='fas fa-angle-right' style = {buttonStyle}/>
-                </button>
+                { this.renderButton("next-month", 'right', 1) }
                 {" "}
-                <button id = "next-year"
-                              onClick={
-                                  () => {
-                                      let iDate = this.state.date;
-                                      iDate.setMonth(iDate.getMonth() + 12)
-                                  }
-                              }
-                >
-                    <i className='fas fa-angle-double-right' style = {buttonStyle}/>
-                </button>
+                { this.renderButton("next-year", 'double-right', 12) }
             </h2>
+        )
+    }
+
+    renderButton(buttonID, imageClass, i) {
+        const buttonStyle = { 'font-size':'24px' }
+
+        return(
+            <button id = {buttonID}
+                    onClick={
+                        () => {
+                            let iDate = this.state.date;
+                            iDate.setMonth(iDate.getMonth() + i)
+                        }
+                    }
+            >
+                <i className={'fas fa-angle-'+imageClass} style = {buttonStyle}/>
+            </button>
         )
     }
 
