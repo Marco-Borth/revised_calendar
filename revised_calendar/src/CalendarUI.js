@@ -5,45 +5,60 @@ export class CalendarUI extends React.Component {
         super(props);
 
         this.state = {
-            weekspan: 7,
+            weekSpan: props.weekspan,
+            month: props.month,
             length: 30,
-            dayCount: 0
+        }
+    }
+
+    setMonthLength() {
+        if ( this.state.weekSpan === 7) {
+            if ( this.state.month === "February" ) {
+                this.setState({length: 28});
+            } else if (
+                this.state.month === "September"
+                || this.state.month === "April"
+                || this.state.month === "June"
+                || this.state.month === "November" ) {
+                this.setState({length: 30});
+            } else {
+                this.setState({length: 31});
+            }
+        } else {
+            this.setState({length: 30});
         }
     }
 
     week(i) {
-        let tempLength = 0;
-
         return(
             <tr>
-                {
-                    //if(this.state.dayCount <= this.state.length) {}
-                    this.day(1 + this.state.weekspan*(i - 1))
-                }
-                {this.day(2 + this.state.weekspan*(i - 1))}
-                {this.day(3 + this.state.weekspan*(i - 1))}
-                {this.day(4 + this.state.weekspan*(i - 1))}
-                {this.day(5 + this.state.weekspan*(i - 1))}
-                {this.day(6 + this.state.weekspan*(i - 1))}
-                {this.day(7 + this.state.weekspan*(i - 1))}
+                {this.day(1 + this.state.weekSpan*(i - 1))}
+                {this.day(2 + this.state.weekSpan*(i - 1))}
+                {this.day(3 + this.state.weekSpan*(i - 1))}
+                {this.day(4 + this.state.weekSpan*(i - 1))}
+                {this.day(5 + this.state.weekSpan*(i - 1))}
+                {this.day(6 + this.state.weekSpan*(i - 1))}
+                {this.addSeventhDay(7 + this.state.weekSpan*(i - 1))}
             </tr>
         )
+    }
 
-        this.setState( {dayCount: 0 } )
+    addSeventhDay(i) {
+        if(this.state.weekSpan === 7) {
+            return(this.day(i))
+        }
     }
 
     day(i) {
         const dayStyle = {
             "border-style": "solid",
-            "width": "100px",
+            "min-width": "100px",
             "height": "100px",
             "text-align": "left",
             "vertical-align": "top"
         }
 
-        if (i <= this.state.length && ( (i - 1) % this.state.weekspan <= this.state.weekspan - 1 ) ) {
-            this.setState( {dayCount: this.state.dayCount + 1 } )
-
+        if (i <= this.state.length ) {
             return(
                 <td style={dayStyle}>{ i }</td>
             )
@@ -51,11 +66,14 @@ export class CalendarUI extends React.Component {
     }
 
     render() {
+        this.setMonthLength();
+
         return(
-          <div class="calendarApp">
-              <h2> January 2023</h2>
+          <div className="calendarApp" style={this.props.style}>
+              <h1> {this.state.weekSpan} Day Week </h1>
+              <h2> {this.state.month} 2023</h2>
               <table>
-                  {this.sevenDays()}
+                  {this.setHeader()}
                   {this.week(1)}
                   {this.week(2)}
                   {this.week(3)}
@@ -66,30 +84,23 @@ export class CalendarUI extends React.Component {
         );
     }
 
-    sevenDays() {
+    setHeader() {
         return(
             <tr className="week-header">
                 <th>Monday</th>
                 <th>Tuesday</th>
                 <th>Wednesday</th>
-                <th>Thursday</th>
+                {this.includeDay()}
                 <th>Friday</th>
                 <th>Saturday</th>
                 <th>Sunday</th>
             </tr>
-        )
+        );
     }
 
-    sixDays() {
-        return(
-            <tr className="week-header">
-                <th>Monday</th>
-                <th>Tuesday</th>
-                <th>Wednesday</th>
-                <th>Friday</th>
-                <th>Saturday</th>
-                <th>Sunday</th>
-            </tr>
-        )
+    includeDay() {
+        if(this.state.weekSpan === 7) {
+            return(<th>Thursday</th>);
+        }
     }
 }
