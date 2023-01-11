@@ -33,13 +33,25 @@ export class CalendarUI extends React.Component {
                 this.setState({length: 31});
             }
         } else {
-            this.setState({length: 30});
+            if ( this.state.date.getMonth() === 1 ) {
+                if (  parseInt(this.state.date.toLocaleString('en-US', {
+                    year: 'numeric',
+                })) % 4 !== 0 ) {
+                    this.setState({length: 35});
+                } else {
+                    this.setState({length: 36});
+                }
+            } else {
+                this.setState({length: 30});
+            }
         }
     }
 
     week(i) {
         return(
             <tr>
+                {this.addWeekHeader(i)}
+
                 {this.day(1 + this.state.weekSpan*(i - 1))}
                 {this.day(2 + this.state.weekSpan*(i - 1))}
                 {this.day(3 + this.state.weekSpan*(i - 1))}
@@ -49,6 +61,12 @@ export class CalendarUI extends React.Component {
                 {this.addSeventhDay(7 + this.state.weekSpan*(i - 1))}
             </tr>
         )
+    }
+
+    addWeekHeader(i) {
+        if ( this.state.weekSpan*(i) < this.state.length + this.state.weekSpan ) {
+            return(<th>Week {i}</th>)
+        }
     }
 
     addSeventhDay(i) {
@@ -66,7 +84,7 @@ export class CalendarUI extends React.Component {
             "vertical-align": "top"
         }
 
-        if (i <= this.state.length ) {
+        if ( i <= this.state.length ) {
             return(
                 <td style={dayStyle}>{ i }</td>
             )
@@ -75,8 +93,6 @@ export class CalendarUI extends React.Component {
 
     render() {
         this.setMonthLength();
-        //this.setDate()
-        //calDate.setMonth(calDate.getMonth() + 1);
 
         return(
           <div className="calendarApp" style={this.props.style}>
@@ -89,6 +105,7 @@ export class CalendarUI extends React.Component {
                   {this.week(3)}
                   {this.week(4)}
                   {this.week(5)}
+                  {this.week(6)}
               </table>
           </div>
         );
@@ -147,11 +164,10 @@ export class CalendarUI extends React.Component {
         )
     }
 
-
-
     setWeekHeader() {
         return(
             <tr className="week-header">
+                <th/>
                 <th>Monday</th>
                 <th>Tuesday</th>
                 <th>Wednesday</th>
