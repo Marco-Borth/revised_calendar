@@ -4,22 +4,30 @@ export class CalendarUI extends React.Component {
     constructor(props) {
         super(props);
 
+        let calDate = new Date();
+
         this.state = {
             weekSpan: props.weekspan,
-            month: props.month,
+            date: calDate,
             length: 30,
         }
     }
 
     setMonthLength() {
         if ( this.state.weekSpan === 7) {
-            if ( this.state.month === "February" ) {
-                this.setState({length: 28});
+            if ( this.state.date.getMonth() === 1 ) {
+                if (  parseInt(this.state.date.toLocaleString('en-US', {
+                    year: 'numeric',
+                })) % 4 !== 0 ) {
+                    this.setState({length: 28});
+                } else {
+                    this.setState({length: 29});
+                }
             } else if (
-                this.state.month === "September"
-                || this.state.month === "April"
-                || this.state.month === "June"
-                || this.state.month === "November" ) {
+                this.state.date.getMonth() === 3
+                || this.state.date.getMonth() === 5
+                || this.state.date.getMonth() === 8
+                || this.state.date.getMonth() === 10 ) {
                 this.setState({length: 30});
             } else {
                 this.setState({length: 31});
@@ -67,13 +75,15 @@ export class CalendarUI extends React.Component {
 
     render() {
         this.setMonthLength();
+        //this.setDate()
+        //calDate.setMonth(calDate.getMonth() + 1);
 
         return(
           <div className="calendarApp" style={this.props.style}>
               <h1> {this.state.weekSpan} Day Week </h1>
-              <h2> {this.state.month} 2023</h2>
+              {this.MonthHeader()}
               <table>
-                  {this.setHeader()}
+                  {this.setWeekHeader()}
                   {this.week(1)}
                   {this.week(2)}
                   {this.week(3)}
@@ -84,7 +94,62 @@ export class CalendarUI extends React.Component {
         );
     }
 
-    setHeader() {
+    MonthHeader() {
+        const buttonStyle = { 'font-size':'24px' }
+        let calDate = this.state.date;
+
+        return(
+            <h2>
+                <button id = "prev-year"
+                        onClick={
+                            () => {
+                                let iDate = this.state.date;
+                                iDate.setMonth(iDate.getMonth() - 12)
+                            }
+                        }
+                >
+                    <i className='fas fa-angle-double-left' style = {buttonStyle}/>
+                </button>
+                {" "}
+                <button id = "prev-month"
+                        onClick={
+                            () => {
+                                let iDate = this.state.date;
+                                iDate.setMonth(iDate.getMonth() - 1)
+                            }
+                        }
+                >
+                    <i className='fas fa-angle-left' style = {buttonStyle}/>
+                </button>
+                { " " + calDate.toLocaleString('en-US', { month: 'long', year: 'numeric'} )+ " " }
+                <button id = "next-month"
+                        onClick={
+                            () => {
+                                let iDate = this.state.date;
+                                iDate.setMonth(iDate.getMonth() + 1)
+                            }
+                        }
+                >
+                    <i className='fas fa-angle-right' style = {buttonStyle}/>
+                </button>
+                {" "}
+                <button id = "next-year"
+                              onClick={
+                                  () => {
+                                      let iDate = this.state.date;
+                                      iDate.setMonth(iDate.getMonth() + 12)
+                                  }
+                              }
+                >
+                    <i className='fas fa-angle-double-right' style = {buttonStyle}/>
+                </button>
+            </h2>
+        )
+    }
+
+
+
+    setWeekHeader() {
         return(
             <tr className="week-header">
                 <th>Monday</th>
