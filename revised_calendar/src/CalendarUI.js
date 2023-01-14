@@ -7,9 +7,10 @@ export class CalendarUI extends React.Component {
         let calDate = new Date();
 
         this.state = {
-            weekSpan: props.weekspan,
+            weekSpan: props.weekspan ? props.weekspan : 7,
             date: calDate,
             length: 30,
+            isLeapYear: false
         }
     }
 
@@ -17,17 +18,17 @@ export class CalendarUI extends React.Component {
         if (  parseInt(this.state.date.toLocaleString('en-US', {
             year: 'numeric',
         })) % 400 === 0 ) {
-            this.setState({length: length + 1});
+            this.setState({length: length + 1, isLeapYear: true});
         } else if (  parseInt(this.state.date.toLocaleString('en-US', {
             year: 'numeric',
         })) % 100 === 0 ) {
-            this.setState({length: length});
+            this.setState({length: length, isLeapYear: false});
         } else if (  parseInt(this.state.date.toLocaleString('en-US', {
             year: 'numeric',
         })) % 4 !== 0 ) {
-            this.setState({length: length});
+            this.setState({length: length, isLeapYear: false});
         } else {
-            this.setState({length: length + 1});
+            this.setState({length: length + 1, isLeapYear: true});
         }
     }
 
@@ -62,8 +63,8 @@ export class CalendarUI extends React.Component {
                 {this.day(2 + this.state.weekSpan*(i - 1))}
                 {this.day(3 + this.state.weekSpan*(i - 1))}
                 {this.day(4 + this.state.weekSpan*(i - 1))}
-                {this.day(5 + this.state.weekSpan*(i - 1))}
-                {this.day(6 + this.state.weekSpan*(i - 1))}
+                {this.day(5 + this.state.weekSpan*(i - 1), "weekend")}
+                {this.day(6 + this.state.weekSpan*(i - 1), "weekend")}
                 {this.addSeventhDay(7 + this.state.weekSpan*(i - 1))}
             </tr>
         )
@@ -77,22 +78,64 @@ export class CalendarUI extends React.Component {
 
     addSeventhDay(i) {
         if(this.state.weekSpan === 7) {
-            return(this.day(i))
+            return(this.day(i, "weekend"))
         }
     }
 
-    day(i) {
-        const dayStyle = {
+
+
+    checkForHoliday(Month, Day) {
+        let holiday = "";
+
+        if(Day === this.state.length) {
+            Day = "end";
+        }
+
+        if(Month === 1 && Day === "end" && this.state.isLeapYear) {
+            holiday += " Leap Day";
+        }
+
+        for (let i = 0; i < USHolidays.length; i++) {
+            if(USHolidays[i][0] === Month + 1
+                && (USHolidays[i][1]  === Day
+                    || USHolidays[i][1][0] * this.state.weekSpan + USHolidays[i][1][1] === Day ) ) {
+                holiday += " " + USHolidays[i][2];
+            }
+        }
+
+        return holiday;
+    }
+
+    day(i, occasion) {
+        let dayStyle = {
             "border-style": "solid",
             "min-width": "100px",
+            "width": "100px",
             "height": "100px",
             "text-align": "left",
-            "vertical-align": "top"
+            "vertical-align": "top",
+            "background-color" : "teal"
+        }
+
+        let holiday = this.checkForHoliday(this.state.date.getMonth(), i);
+
+        if(occasion === "weekend") {
+            if( (i - 1) % this.state.weekSpan === this.state.weekSpan - 2
+                || (i - 1) % this.state.weekSpan === this.state.weekSpan - 1 ) {
+                dayStyle["background-color"] = "coral";
+            }
+
+        }
+
+        if(holiday !== "") {
+            dayStyle["background-color"] = "violet";
         }
 
         if ( i <= this.state.length ) {
             return(
-                <td style={dayStyle}>{ i }</td>
+                <td style={dayStyle}>
+                    { i + holiday }
+                </td>
             )
         }
     }
@@ -171,3 +214,27 @@ export class CalendarUI extends React.Component {
         }
     }
 }
+
+let USHolidays = [
+    [1, 1, "New Years Day"],
+    [2, 2, "Groundhog Day"],
+    [2, 14, "Valentines Day"],
+    [2, [2, 2], "Presidents' Day"],
+    [3, 15, "The Ides of March"],
+    [4, 1, "April Fools Day"],
+    [5, [2, 0], "Mother's Day"],
+    [5, [4, 1], "Memorial Day"],
+    [6, [3, 0], "Father's Day"],
+    [6, 19, "Juneteenth"],
+    [7, 4, "Independence Day"],
+    [9, [0, 1], "Labor Day"],
+    [10, 9, "Columbus Day"],
+    [10, "end", "Halloween Day"],
+    [11, [0, 2], "Election Day"],
+    [11, 11, "Veterans Day"],
+    [11, [3, 4], "Thanksgiving Day"],
+    [11, [3, 5], "N.A. Heritage Day"],
+    [12, 24, "Christmas Eve Day"],
+    [12, 25, "Christmas Day"],
+    [12, "end", "New Years Eve Day"],
+];
