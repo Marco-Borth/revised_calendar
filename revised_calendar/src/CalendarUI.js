@@ -55,36 +55,43 @@ export class CalendarUI extends React.Component {
     }
 
     week(i) {
+        let startDate = new Date(this.state.date.getFullYear(), this.state.date.getMonth(), 1, );
+
+        let week = this.state.weekSpan*(i - 1);
+        if(this.state.weekSpan === 7) {
+            week = week - startDate.getDay() - 5;
+        }
         return(
             <tr>
                 {this.addWeekHeader(i)}
 
-                {this.day(1 + this.state.weekSpan*(i - 1))}
-                {this.day(2 + this.state.weekSpan*(i - 1))}
-                {this.day(3 + this.state.weekSpan*(i - 1))}
-                {this.day(4 + this.state.weekSpan*(i - 1))}
-                {this.day(5 + this.state.weekSpan*(i - 1), "weekend")}
-                {this.day(6 + this.state.weekSpan*(i - 1), "weekend")}
-                {this.addSeventhDay(7 + this.state.weekSpan*(i - 1))}
+                {this.addSeventhDay(week)}
+                {this.day(1 + week)}
+                {this.day(2 + week)}
+                {this.day(3 + week)}
+                {this.day(4 + week)}
+                {this.day(5 + week, "weekend")}
+                {this.day(6 + week, "weekend")}
             </tr>
         )
     }
 
     addWeekHeader(i) {
-        if ( this.state.weekSpan*(i) < this.state.length + this.state.weekSpan ) {
+        if(this.state.weekSpan === 7) {
+            return(<th>Week {i-1}</th>)
+        } else  if ( this.state.weekSpan*(i) < this.state.length + this.state.weekSpan ) {
             return(<th>Week {i}</th>)
         }
     }
 
     addSeventhDay(i) {
         if(this.state.weekSpan === 7) {
-            return(this.day(i, "weekend"))
+            return(this.day(i, ))
         }
     }
 
-
-
     checkForHoliday(Month, Day) {
+        let startDate = new Date(this.state.date.getFullYear(), Month, 1);
         let holiday = "";
 
         if(Day === this.state.length) {
@@ -96,10 +103,19 @@ export class CalendarUI extends React.Component {
         }
 
         for (let i = 0; i < USHolidays.length; i++) {
-            if(USHolidays[i][0] === Month + 1
-                && (USHolidays[i][1]  === Day
-                    || USHolidays[i][1][0] * this.state.weekSpan + USHolidays[i][1][1] === Day ) ) {
-                holiday += " " + USHolidays[i][2];
+            if ( USHolidays[i][0] === Month + 1 ) {
+                if ( USHolidays[i][1]  === Day) {
+                    holiday += " " + USHolidays[i][2];
+                } else if (this.state.weekSpan === 7) {
+                    if ( USHolidays[i][1][0] * this.state.weekSpan
+                        + USHolidays[i][1][1] - startDate.getDay() === Day ) {
+                        holiday += " " + USHolidays[i][2];
+                    }
+                } else {
+                    if ( USHolidays[i][1][0] * this.state.weekSpan + USHolidays[i][1][1] - 1 === Day ) {
+                        holiday += " " + USHolidays[i][2];
+                    }
+                }
             }
         }
 
@@ -120,23 +136,32 @@ export class CalendarUI extends React.Component {
         let holiday = this.checkForHoliday(this.state.date.getMonth(), i);
 
         if(occasion === "weekend") {
-            if( (i - 1) % this.state.weekSpan === this.state.weekSpan - 2
-                || (i - 1) % this.state.weekSpan === this.state.weekSpan - 1 ) {
-                dayStyle["background-color"] = "coral";
-            }
+            dayStyle["background-color"] = "coral";
+        }
 
+        if(!this.state.isLeapYear && i === 34) {
+            dayStyle["background-color"] = "coral";
         }
 
         if(holiday !== "") {
             dayStyle["background-color"] = "violet";
         }
 
-        if ( i <= this.state.length ) {
-            return(
-                <td style={dayStyle}>
-                    { i + holiday }
-                </td>
-            )
+        if ( i <= this.state.length) {
+            if (i <= 0) {
+                if(this.state.weekSpan === 7) {
+                    return(
+                        <td>
+                        </td>
+                    )
+                }
+            } else {
+                return(
+                    <td style={dayStyle}>
+                        { i + holiday }
+                    </td>
+                )
+            }
         }
     }
 
@@ -219,15 +244,15 @@ let USHolidays = [
     [1, 1, "New Years Day"],
     [2, 2, "Groundhog Day"],
     [2, 14, "Valentines Day"],
-    [2, [2, 2], "Presidents' Day"],
+    [2, [3, 2], "Presidents' Day"],
     [3, 15, "The Ides of March"],
     [4, 1, "April Fools Day"],
-    [5, [2, 0], "Mother's Day"],
-    [5, [4, 1], "Memorial Day"],
-    [6, [3, 0], "Father's Day"],
+    [5, [2, 1], "Mother's Day"],
+    [5, [4, 2], "Memorial Day"],
+    [6, [3, 1], "Father's Day"],
     [6, 19, "Juneteenth"],
     [7, 4, "Independence Day"],
-    [9, [0, 1], "Labor Day"],
+    [9, [1, 2], "Labor Day"],
     [10, 9, "Columbus Day"],
     [10, "end", "Halloween Day"],
     [11, [0, 2], "Election Day"],
