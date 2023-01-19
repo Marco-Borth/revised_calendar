@@ -57,21 +57,26 @@ export class CalendarUI extends React.Component {
     week(i) {
         let startDate = new Date(this.state.date.getFullYear(), this.state.date.getMonth(), 1, );
 
-        let week = this.state.weekSpan*(i - 1);
+        let week = this.state.weekSpan*(i - 1) + 2;
         if(this.state.weekSpan === 7) {
             week = week - startDate.getDay() - 5;
         }
+
+        if(this.state.weekSpan === 5) {
+            week -= 1;
+        }
+
         return(
             <tr>
                 {this.addWeekHeader(i)}
 
-                {this.addSeventhDay(week)}
+                {this.addDay(week - 2, 7)}
+                {this.addDay(week - 1, 6)}
+                {this.day(week)}
                 {this.day(1 + week)}
                 {this.day(2 + week)}
-                {this.day(3 + week)}
-                {this.day(4 + week)}
-                {this.day(5 + week, "weekend")}
-                {this.day(6 + week, "weekend")}
+                {this.day(3 + week, "weekend")}
+                {this.day(4 + week, "weekend")}
             </tr>
         )
     }
@@ -79,14 +84,14 @@ export class CalendarUI extends React.Component {
     addWeekHeader(i) {
         if(this.state.weekSpan === 7) {
             return(<th>Week {i-1}</th>)
-        } else  if ( this.state.weekSpan*(i) < this.state.length + this.state.weekSpan ) {
+        } else if ( this.state.weekSpan*(i) < this.state.length + this.state.weekSpan ) {
             return(<th>Week {i}</th>)
         }
     }
 
-    addSeventhDay(i) {
-        if(this.state.weekSpan === 7) {
-            return(this.day(i, ))
+    addDay(i, j) {
+        if(this.state.weekSpan >= j) {
+            return(this.day(i))
         }
     }
 
@@ -109,14 +114,33 @@ export class CalendarUI extends React.Component {
                 } else if (this.state.weekSpan === 7) {
                     let adjust = 0
                     if (USHolidays[i][1][1] < startDate.getDay() + 1) {
-                        adjust += 7
+                        adjust = 7
                     }
+
+                    if ( USHolidays[i][1][0] === "last" ) {
+                        /*
+                        let adjust = 0;
+                        if(Day === this.state.length - this.state.weekSpan ) {
+                            adjust = 1;
+                        }
+                         */
+
+                        if ( this.state.weekSpan * 4 + USHolidays[i][1][1] - startDate.getDay() === Day ) {
+                            holiday += " " + USHolidays[i][2];
+                        }
+                    }
+
 
                     if ( USHolidays[i][1][0] * this.state.weekSpan
                         + USHolidays[i][1][1] - startDate.getDay() + adjust === Day ) {
                         holiday += " " + USHolidays[i][2];
                     }
                 } else {
+                    if ( USHolidays[i][1][0] === "last" &&
+                        this.state.length - this.state.weekSpan + USHolidays[i][1][1] - 1 === Day ) {
+                        holiday += " " + USHolidays[i][2];
+                    }
+
                     if ( USHolidays[i][1][0] * this.state.weekSpan + USHolidays[i][1][1] - 1 === Day ) {
                         holiday += " " + USHolidays[i][2];
                     }
@@ -146,7 +170,6 @@ export class CalendarUI extends React.Component {
             }
         }
 
-
         return holiday;
     }
 
@@ -163,11 +186,7 @@ export class CalendarUI extends React.Component {
 
         let holiday = this.checkForHoliday(this.state.date.getMonth(), i);
 
-        if(occasion === "weekend") {
-            dayStyle["background-color"] = "coral";
-        }
-
-        if(!this.state.isLeapYear && i === 34) {
+        if(occasion === "weekend" || i === 34) {
             dayStyle["background-color"] = "coral";
         }
 
@@ -178,10 +197,7 @@ export class CalendarUI extends React.Component {
         if ( i <= this.state.length) {
             if (i <= 0) {
                 if(this.state.weekSpan === 7) {
-                    return(
-                        <td>
-                        </td>
-                    )
+                    return( <td></td>)
                 }
             } else {
                 return(
@@ -209,6 +225,7 @@ export class CalendarUI extends React.Component {
                   {this.week(5)}
                   {this.week(6)}
                   {this.week(7)}
+                  {this.week(8)}
               </table>
           </div>
         );
@@ -219,12 +236,10 @@ export class CalendarUI extends React.Component {
 
         return(
             <h2>
-                { this.renderButton("prev-year", 'double-left', -12) }
-                {" "}
+                { this.renderButton("prev-year", 'double-left', -12) } {" "}
                 { this.renderButton("prev-month", 'left', -1) }
                 { " " + calDate.toLocaleString('en-US', { month: 'long', year: 'numeric'} )+ " " }
-                { this.renderButton("next-month", 'right', 1) }
-                {" "}
+                { this.renderButton("next-month", 'right', 1) } {" "}
                 { this.renderButton("next-year", 'double-right', 12) }
             </h2>
         )
@@ -254,17 +269,19 @@ export class CalendarUI extends React.Component {
                 <th>Monday</th>
                 <th>Tuesday</th>
                 <th>Wednesday</th>
-                {this.includeDay()}
+                {this.includeDay("Thursday")}
                 <th>Friday</th>
-                <th>Saturday</th>
+                {this.includeDay("Saturday")}
                 <th>Sunday</th>
             </tr>
         );
     }
 
-    includeDay() {
+    includeDay(Day) {
         if(this.state.weekSpan === 7) {
-            return(<th>Thursday</th>);
+            return(<th>{Day}</th>);
+        } else if (Day === "Saturday" && this.state.weekSpan === 6) {
+            return(<th>{Day}</th>);
         }
     }
 }
@@ -285,7 +302,7 @@ let USHolidays = [
     [4, 22, "Arbor Day"],
     [5, 5, "Cinco de Mayo"],
     [5, [2, 1], "Mother's Day"],
-    [5, [3, 2], "Memorial Day"],
+    [5, ["last", 2], "Memorial Day"],
     [6, [3, 1], "Father's Day"],
     [6, 14, "Flag Day USA"],
     [6, 19, "Juneteenth"],

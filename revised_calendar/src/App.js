@@ -2,8 +2,8 @@ import './App.css';
 import {CalendarUI} from "./CalendarUI";
 
 function App() {
-    const sixStyle = { "float": "left"}
-    const sevenStyle = { "float": "right"}
+    const newStyle = { "float": "left"}
+    const standardStyle = { "float": "right"}
 
   return (
     <div className="App">
@@ -12,11 +12,15 @@ function App() {
       </h1>
         <CalendarUI
             weekspan={6}
-            style={sixStyle}
+            style={newStyle}
         />
         <CalendarUI
             weekspan={7}
-            style={sevenStyle}
+            style={standardStyle}
+        />
+        <CalendarUI
+            weekspan={5}
+            style={newStyle}
         />
     </div>
   );
