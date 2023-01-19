@@ -107,8 +107,13 @@ export class CalendarUI extends React.Component {
                 if ( USHolidays[i][1]  === Day) {
                     holiday += " " + USHolidays[i][2];
                 } else if (this.state.weekSpan === 7) {
+                    let adjust = 0
+                    if (USHolidays[i][1][1] < startDate.getDay() + 1) {
+                        adjust += 7
+                    }
+
                     if ( USHolidays[i][1][0] * this.state.weekSpan
-                        + USHolidays[i][1][1] - startDate.getDay() === Day ) {
+                        + USHolidays[i][1][1] - startDate.getDay() + adjust === Day ) {
                         holiday += " " + USHolidays[i][2];
                     }
                 } else {
@@ -118,6 +123,29 @@ export class CalendarUI extends React.Component {
                 }
             }
         }
+
+        if (this.state.weekSpan === 7) {
+            if (Month === 2 && Day === 20) {
+                holiday += " Spring Equinox"
+            } else if (Month === 5 && Day === 21) {
+                holiday += " Summer Solstice"
+            } else if (Month === 8 && Day === 22) {
+                holiday += " Fall Equinox"
+            } else if (Month === 11 && Day === 21) {
+                holiday += " Winter Solstice"
+            }
+        } else {
+            if (Month === 2 && Day === 14) {
+                holiday += " Spring Equinox"
+            } else if (Month === 5 && Day === 17) {
+                holiday += " Summer Solstice"
+            } else if (Month === 8 && Day === 20) {
+                holiday += " Fall Equinox"
+            } else if (Month === 11 && Day === 20) {
+                holiday += " Winter Solstice"
+            }
+        }
+
 
         return holiday;
     }
@@ -158,7 +186,7 @@ export class CalendarUI extends React.Component {
             } else {
                 return(
                     <td style={dayStyle}>
-                        { i + holiday }
+                        { i + holiday}
                     </td>
                 )
             }
@@ -180,6 +208,7 @@ export class CalendarUI extends React.Component {
                   {this.week(4)}
                   {this.week(5)}
                   {this.week(6)}
+                  {this.week(7)}
               </table>
           </div>
         );
@@ -242,24 +271,34 @@ export class CalendarUI extends React.Component {
 
 let USHolidays = [
     [1, 1, "New Years Day"],
+    [1, 6, "Orthodox Christmas Eve Day"],
+    [1, 7, "Orthodox Christmas Day"],
+    [1, [2, 2], "MLK Day"],
     [2, 2, "Groundhog Day"],
     [2, 14, "Valentines Day"],
-    [2, [3, 2], "Presidents' Day"],
+    [2, [2, 2], "Presidents' Day"],
+    //[2, [3, 4], "Ash Wednesday"],
+    [3, 14, "Pi Day"],
     [3, 15, "The Ides of March"],
     [4, 1, "April Fools Day"],
+    [4, 15, "Tax Day"],
+    [4, 22, "Arbor Day"],
+    [5, 5, "Cinco de Mayo"],
     [5, [2, 1], "Mother's Day"],
-    [5, [4, 2], "Memorial Day"],
+    [5, [3, 2], "Memorial Day"],
     [6, [3, 1], "Father's Day"],
+    [6, 14, "Flag Day USA"],
     [6, 19, "Juneteenth"],
     [7, 4, "Independence Day"],
-    [9, [1, 2], "Labor Day"],
+    [9, [0, 2], "Labor Day"],
     [10, 9, "Columbus Day"],
     [10, "end", "Halloween Day"],
-    [11, [0, 2], "Election Day"],
+    [11, [0, 3], "Election Day"],
     [11, 11, "Veterans Day"],
     [11, [3, 4], "Thanksgiving Day"],
     [11, [3, 5], "N.A. Heritage Day"],
     [12, 24, "Christmas Eve Day"],
     [12, 25, "Christmas Day"],
+    [12, 26, "Kwanzaa"],
     [12, "end", "New Years Eve Day"],
 ];
