@@ -75,20 +75,13 @@ export class CalendarUI extends React.Component {
             <tr>
                 {this.addWeekHeader(i)}
 
-                {this.addCalDay(week - 1)}
+                {this.addDay(week - 2, 7)}
+                {this.addDay(week - 1, 6)}
                 {this.addCalDay(week)}
                 {this.addCalDay(1 + week)}
                 {this.addCalDay(2 + week)}
                 {this.addCalDay(3 + week, true)}
                 {this.addCalDay(4 + week, true)}
-
-                {this.addDay(week - 2, 7)}
-                {this.addDay(week - 1, 6)}
-                {this.day(week)}
-                {this.day(1 + week)}
-                {this.day(2 + week)}
-                {this.day(3 + week, "weekend")}
-                {this.day(4 + week, "weekend")}
             </tr>
         )
     }
@@ -103,126 +96,21 @@ export class CalendarUI extends React.Component {
 
     addDay(i, j) {
         if(this.state.weekSpan >= j) {
-            return(this.day(i))
+            return(this.addCalDay(i))
         }
-    }
-
-    checkForHoliday(Month, Day) {
-        let startDate = new Date(this.state.date.getFullYear(), Month, 1);
-        let holiday = "";
-
-        if(Day === this.state.length) {
-            Day = "end";
-        }
-
-        if(Month === 1 && Day === "end" && this.state.isLeapYear) {
-            holiday += " Leap Day";
-        }
-
-        for (let i = 0; i < USHolidays.length; i++) {
-            if ( USHolidays[i][0] === Month + 1 ) {
-                if ( USHolidays[i][1]  === Day) {
-                    holiday += " " + USHolidays[i][2];
-                } else if (this.state.weekSpan === 7) {
-                    let adjust = 0
-                    if (USHolidays[i][1][1] < startDate.getDay() + 1) {
-                        adjust = 7
-                    }
-
-                    if ( USHolidays[i][1][0] === "last" ) {
-                        /*
-                        let adjust = 0;
-                        if(Day === this.state.length - this.state.weekSpan ) {
-                            adjust = 1;
-                        }
-                         */
-
-                        if ( this.state.weekSpan * 4 + USHolidays[i][1][1] - startDate.getDay() === Day ) {
-                            holiday += " " + USHolidays[i][2];
-                        }
-                    }
-
-
-                    if ( USHolidays[i][1][0] * this.state.weekSpan
-                        + USHolidays[i][1][1] - startDate.getDay() + adjust === Day ) {
-                        holiday += " " + USHolidays[i][2];
-                    }
-                } else {
-                    if ( USHolidays[i][1][0] === "last" &&
-                        this.state.length - this.state.weekSpan + USHolidays[i][1][1] - 1 === Day ) {
-                        holiday += " " + USHolidays[i][2];
-                    }
-
-                    if ( USHolidays[i][1][0] * this.state.weekSpan + USHolidays[i][1][1] - 1 === Day ) {
-                        holiday += " " + USHolidays[i][2];
-                    }
-                }
-            }
-        }
-
-        if (this.state.weekSpan === 7) {
-            if (Month === 2 && Day === 20) {
-                holiday += " Spring Equinox"
-            } else if (Month === 5 && Day === 21) {
-                holiday += " Summer Solstice"
-            } else if (Month === 8 && Day === 22) {
-                holiday += " Fall Equinox"
-            } else if (Month === 11 && Day === 21) {
-                holiday += " Winter Solstice"
-            }
-        } else {
-            if (Month === 2 && Day === 14) {
-                holiday += " Spring Equinox"
-            } else if (Month === 5 && Day === 17) {
-                holiday += " Summer Solstice"
-            } else if (Month === 8 && Day === 20) {
-                holiday += " Fall Equinox"
-            } else if (Month === 11 && Day === 20) {
-                holiday += " Winter Solstice"
-            }
-        }
-
-        return holiday;
     }
 
     addCalDay(i, occasion) {
         let curDate = this.state.date;
         let weekSpan = this.state.weekSpan;
 
-
-        if ( i <= this.state.length) {
-            if (i <= 0) {
-                if(this.state.weekSpan === 7) {
-                    return( <td></td>)
-                }
-            } else {
-                return(
-                    <Day date={curDate} day={i} monthLength={this.state.length} weekSpan={weekSpan} isWeekend={occasion}/>
-                )
+        /*
+        let monthlySchedule = USHolidays.filter(
+            (event) => {
+                return event[0] === curDate.getMonth() + 1;
             }
-        }
-    }
-
-    day(i, occasion) {
-        let dayStyle = {
-            "border-style": "solid",
-            "min-width": "100px",
-            "width": "100px",
-            "height": "100px",
-            "text-align": "left",
-            "vertical-align": "top",
-            "background-color" : "teal"
-        }
-
-        let holiday = this.checkForHoliday(this.state.date.getMonth(), i);
-
-        if(occasion === "weekend" || i === 34) {
-            dayStyle["background-color"] = "coral";
-        }
-
-        if(holiday !== "") {
-            dayStyle["background-color"] = "violet";
-        }
+        )
+        */
 
         if ( i <= this.state.length) {
             if (i <= 0) {
@@ -231,9 +119,7 @@ export class CalendarUI extends React.Component {
                 }
             } else {
                 return(
-                    <td style={dayStyle}>
-                        { i + holiday}
-                    </td>
+                    <Day date={curDate} day={i} monthLength={this.state.length} weekSpan={weekSpan} schedule={USHolidays} isWeekend={occasion}/>
                 )
             }
         }
@@ -248,7 +134,6 @@ export class CalendarUI extends React.Component {
           <div className="calendarApp" style={this.props.style}>
               <h1> {this.state.weekSpan} Day Week </h1>
               {this.MonthHeader()}
-              {this.organiseCalendar()}
               <table>
                   {this.setWeekHeader()}
                   {this.week(1)}
@@ -262,30 +147,6 @@ export class CalendarUI extends React.Component {
               </table>
           </div>
         );
-    }
-
-    organiseCalendar() {
-        this.setMonthLength();
-
-        this.setState( {weeks:this.state.length/this.state.weekSpan})
-
-        if(this.state.weekSpan !== 7) {
-            let divs = []
-
-            for (let i = 0; i < this.state.weeks; i++) {
-                divs.push(i + 1)
-            }
-
-            return (
-                <table>
-                    { divs.map(
-                        week => {
-                            this.week(week)
-                        }
-                    ) }
-                </table>
-            )
-        }
     }
 
     MonthHeader() {

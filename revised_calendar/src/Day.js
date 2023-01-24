@@ -1,5 +1,4 @@
 import React from 'react';
-import * as events from "events";
 
 export class Day extends React.Component {
     constructor(props) {
@@ -27,9 +26,7 @@ export class Day extends React.Component {
             return false;
         } else if (  parseInt(this.state.date.toLocaleString('en-US', {
             year: 'numeric',
-        })) % 4 !== 0 ) {
-            return false;
-        } else {
+        })) % 4 === 0 ) {
             return true;
         }
     }
@@ -63,6 +60,7 @@ export class Day extends React.Component {
     checkForHoliday() {
         let Day = this.state.day;
         let Month = this.state.date.getMonth();
+        let startDate = new Date(this.state.date.getFullYear(), Month, 1);
 
         let events = []
         if(this.state.day === this.state.monthLength) {
@@ -72,7 +70,61 @@ export class Day extends React.Component {
         let SEvent = this.checkForSolarEvents(Month, Day);
 
         if (SEvent !== null) {
-            events.push(SEvent);
+            events.push(" " + SEvent);
+        }
+
+        let schedule = this.state.schedule;
+
+        /*
+        let monthlySchedule = schedule.filter(
+            (event) => {
+                return event[0] === Month;
+            }
+        )
+
+        schedule = monthlySchedule
+         */
+
+        for (let i = 0; i < schedule.length; i++ ) {
+            if ( schedule[i][0] === Month + 1 ) {
+                if ( schedule[i][1] === Day ) {
+                    events.push(" " + schedule[i][2]);
+                } else if (this.state.weekSpan === 7) {
+                    let adjust = 0;
+                    if (schedule[i][1][1] < startDate.getDay() + 1) {
+                        adjust = 7
+                    }
+
+                    if ( schedule[i][1][0] === "last" ) {
+                        /*
+                        let adjust = 0;
+                        if(Day === this.state.length - this.state.weekSpan ) {
+                            adjust = 1;
+                        }
+                        */
+
+
+                        if ( this.state.weekSpan * 4 + schedule[i][1][1] - startDate.getDay() === Day ) {
+                            events.push(" " + schedule[i][2]);
+                        }
+                    }
+
+
+                    if ( schedule[i][1][0] * this.state.weekSpan
+                        + schedule[i][1][1] - startDate.getDay() + adjust - 2 === Day ) {
+                        events.push(" " + schedule[i][2]);
+                    }
+                } else {
+                    if ( schedule[i][1][0] === "last" &&
+                        this.state.monthLength - this.state.weekSpan + schedule[i][1][1] - 1 === Day ) {
+                        events.push(" " + schedule[i][2]);
+                    }
+
+                    if ( schedule[i][1][0] * this.state.weekSpan + schedule[i][1][1] - 1 === Day ) {
+                        events.push(" " + schedule[i][2]);
+                    }
+                }
+            }
         }
 
         /*
@@ -119,7 +171,7 @@ export class Day extends React.Component {
 
         return(
             <td style={dayStyle}>
-                { this.state.day + ", " + this.state.date.getMonth() + ", " + this.state.weekSpan }
+                { this.state.day }
             </td>
         )
     }
