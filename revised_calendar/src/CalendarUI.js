@@ -1,17 +1,20 @@
 import React from 'react';
+import { Day } from './Day.js';
 
 export class CalendarUI extends React.Component {
     constructor(props) {
         super(props);
 
         let calDate = new Date();
+        calDate.setDate(1);
 
         this.state = {
             weekSpan: props.weekspan ? props.weekspan : 7,
+            length: 30,
             date: calDate,
             weekdays: null,
             weekends: null,
-            length: 30,
+            weeks: 1,
             isLeapYear: false
         }
     }
@@ -71,6 +74,13 @@ export class CalendarUI extends React.Component {
         return(
             <tr>
                 {this.addWeekHeader(i)}
+
+                {this.addCalDay(week - 1)}
+                {this.addCalDay(week)}
+                {this.addCalDay(1 + week)}
+                {this.addCalDay(2 + week)}
+                {this.addCalDay(3 + week, true)}
+                {this.addCalDay(4 + week, true)}
 
                 {this.addDay(week - 2, 7)}
                 {this.addDay(week - 1, 6)}
@@ -175,6 +185,24 @@ export class CalendarUI extends React.Component {
         return holiday;
     }
 
+    addCalDay(i, occasion) {
+        let curDate = this.state.date;
+        let weekSpan = this.state.weekSpan;
+
+
+        if ( i <= this.state.length) {
+            if (i <= 0) {
+                if(this.state.weekSpan === 7) {
+                    return( <td></td>)
+                }
+            } else {
+                return(
+                    <Day date={curDate} day={i} monthLength={this.state.length} weekSpan={weekSpan} isWeekend={occasion}/>
+                )
+            }
+        }
+    }
+
     day(i, occasion) {
         let dayStyle = {
             "border-style": "solid",
@@ -214,10 +242,13 @@ export class CalendarUI extends React.Component {
     render() {
         this.setMonthLength();
 
+        this.setState( {weeks:this.state.length/this.state.weekSpan})
+
         return(
           <div className="calendarApp" style={this.props.style}>
               <h1> {this.state.weekSpan} Day Week </h1>
               {this.MonthHeader()}
+              {this.organiseCalendar()}
               <table>
                   {this.setWeekHeader()}
                   {this.week(1)}
@@ -231,6 +262,30 @@ export class CalendarUI extends React.Component {
               </table>
           </div>
         );
+    }
+
+    organiseCalendar() {
+        this.setMonthLength();
+
+        this.setState( {weeks:this.state.length/this.state.weekSpan})
+
+        if(this.state.weekSpan !== 7) {
+            let divs = []
+
+            for (let i = 0; i < this.state.weeks; i++) {
+                divs.push(i + 1)
+            }
+
+            return (
+                <table>
+                    { divs.map(
+                        week => {
+                            this.week(week)
+                        }
+                    ) }
+                </table>
+            )
+        }
     }
 
     MonthHeader() {
@@ -258,8 +313,7 @@ export class CalendarUI extends React.Component {
                             iDate.setMonth(iDate.getMonth() + i)
                         }
                     }
-            >
-                <i className={'fas fa-angle-'+imageClass} style = {buttonStyle}/>
+            > <i className={'fas fa-angle-'+imageClass} style = {buttonStyle}/>
             </button>
         )
     }
@@ -279,8 +333,7 @@ export class CalendarUI extends React.Component {
         let weekdays = names.splice(0, names.length-2)
         let weekends = names.splice(names.length-2, names.length)
 
-        this.setState({weekdays: weekdays});
-        this.setState({weekends: weekends});
+        this.setState({weekdays: weekdays, weekends: weekends});
 
         return(
             <tr className="week-header">
