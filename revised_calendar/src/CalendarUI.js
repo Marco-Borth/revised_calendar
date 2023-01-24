@@ -9,6 +9,8 @@ export class CalendarUI extends React.Component {
         this.state = {
             weekSpan: props.weekspan ? props.weekspan : 7,
             date: calDate,
+            weekdays: null,
+            weekends: null,
             length: 30,
             isLeapYear: false
         }
@@ -263,26 +265,30 @@ export class CalendarUI extends React.Component {
     }
 
     setWeekHeader() {
+        let names = ["Monday", "Tuesday", "Wednesday",];
+
+        if(this.state.weekSpan === 7) {
+            names.push("Thursday");
+        }
+        names.push("Friday");
+        if(this.state.weekSpan >= 6) {
+            names.push("Saturday");
+        }
+        names.push("Sunday");
+
+        let weekdays = names.splice(0, names.length-2)
+        let weekends = names.splice(names.length-2, names.length)
+
+        this.setState({weekdays: weekdays});
+        this.setState({weekends: weekends});
+
         return(
             <tr className="week-header">
                 <th/>
-                <th>Monday</th>
-                <th>Tuesday</th>
-                <th>Wednesday</th>
-                {this.includeDay("Thursday")}
-                <th>Friday</th>
-                {this.includeDay("Saturday")}
-                <th>Sunday</th>
+                { weekdays.map( workday => ( <th>{workday}</th> ) ) }
+                { weekends.map( workday => ( <th>{workday}</th> ) ) }
             </tr>
         );
-    }
-
-    includeDay(Day) {
-        if(this.state.weekSpan === 7) {
-            return(<th>{Day}</th>);
-        } else if (Day === "Saturday" && this.state.weekSpan === 6) {
-            return(<th>{Day}</th>);
-        }
     }
 }
 
