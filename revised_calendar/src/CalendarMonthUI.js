@@ -1,12 +1,17 @@
 import React from 'react';
 import { Day } from './Day.js';
 
-export class CalendarUI extends React.Component {
+export class CalendarMonthUI extends React.Component {
     constructor(props) {
         super(props);
 
-        let calDate = new Date();
-        calDate.setDate(1);
+        let calDate;
+        if(props.calDate != null) {
+            calDate = props.calDate
+        } else {
+            calDate = new Date();
+            calDate.setDate(1);
+        }
 
         this.state = {
             weekSpan: props.weekspan ? props.weekspan : 7,
@@ -15,7 +20,8 @@ export class CalendarUI extends React.Component {
             weekdays: null,
             weekends: null,
             weeks: 1,
-            isLeapYear: false
+            isLeapYear: false,
+            isIndependent: props.isIndependent ? props.isIndependent : false
         }
     }
 
@@ -128,11 +134,21 @@ export class CalendarUI extends React.Component {
     render() {
         this.setMonthLength();
 
-        this.setState( {weeks:this.state.length/this.state.weekSpan})
+        this.setState( {weeks:this.state.length/this.state.weekSpan});
+
+        let title = null;
+
+        if(this.state.isIndependent) {
+            title = this.state.weekSpan + " Day Week";
+        }
 
         return(
-          <div className="calendarApp" style={this.props.style}>
-              <h1> {this.state.weekSpan} Day Week </h1>
+          <div style={this.props.style}
+               className={
+                    "" + this.state.date.toLocaleString('en-US', { month: 'long', year: 'numeric'} )
+                }
+          >
+              <h1>{title}</h1>
               {this.MonthHeader()}
               <table>
                   {this.setWeekHeader()}
@@ -152,15 +168,19 @@ export class CalendarUI extends React.Component {
     MonthHeader() {
         let calDate = this.state.date;
 
-        return(
-            <h2>
-                { this.renderButton("prev-year", 'double-left', -12) } {" "}
-                { this.renderButton("prev-month", 'left', -1) }
-                { " " + calDate.toLocaleString('en-US', { month: 'long', year: 'numeric'} )+ " " }
-                { this.renderButton("next-month", 'right', 1) } {" "}
-                { this.renderButton("next-year", 'double-right', 12) }
-            </h2>
-        )
+        if (this.state.isIndependent) {
+            return(
+                <h2>
+                    { this.renderButton("prev-year", 'double-left', -12) } {" "}
+                    { this.renderButton("prev-month", 'left', -1) }
+                    { " " + calDate.toLocaleString('en-US', { month: 'long', year: 'numeric'} )+ " " }
+                    { this.renderButton("next-month", 'right', 1) } {" "}
+                    { this.renderButton("next-year", 'double-right', 12) }
+                </h2>
+            )
+        } else {
+            return ( <h2> { " " + calDate.toLocaleString('en-US', { month: 'long', year: 'numeric'} )+ " " } </h2> )
+        }
     }
 
     renderButton(buttonID, imageClass, i) {
@@ -180,29 +200,31 @@ export class CalendarUI extends React.Component {
     }
 
     setWeekHeader() {
-        let names = ["Monday", "Tuesday", "Wednesday",];
+        if( this.state.isIndependent || (!this.state.isIndependent && this.state.date.getMonth() === 0) ){
+            let names = ["Monday", "Tuesday", "Wednesday",];
 
-        if(this.state.weekSpan === 7) {
-            names.push("Thursday");
+            if(this.state.weekSpan === 7) {
+                names.push("Thursday");
+            }
+            names.push("Friday");
+            if(this.state.weekSpan >= 6) {
+                names.push("Saturday");
+            }
+            names.push("Sunday");
+
+            let weekdays = names.splice(0, names.length-2)
+            let weekends = names.splice(names.length-2, names.length)
+
+            this.setState({weekdays: weekdays, weekends: weekends});
+
+            return(
+                <tr className="week-header">
+                    <th/>
+                    { weekdays.map( workday => ( <th>{workday}</th> ) ) }
+                    { weekends.map( workday => ( <th>{workday}</th> ) ) }
+                </tr>
+            );
         }
-        names.push("Friday");
-        if(this.state.weekSpan >= 6) {
-            names.push("Saturday");
-        }
-        names.push("Sunday");
-
-        let weekdays = names.splice(0, names.length-2)
-        let weekends = names.splice(names.length-2, names.length)
-
-        this.setState({weekdays: weekdays, weekends: weekends});
-
-        return(
-            <tr className="week-header">
-                <th/>
-                { weekdays.map( workday => ( <th>{workday}</th> ) ) }
-                { weekends.map( workday => ( <th>{workday}</th> ) ) }
-            </tr>
-        );
     }
 }
 
@@ -214,7 +236,6 @@ let USHolidays = [
     [2, 2, "Groundhog Day"],
     [2, 14, "Valentines Day"],
     [2, [2, 2], "Presidents' Day"],
-    //[2, [3, 4], "Ash Wednesday"],
     [3, 14, "Pi Day"],
     [3, 15, "The Ides of March"],
     [4, 1, "April Fools Day"],
