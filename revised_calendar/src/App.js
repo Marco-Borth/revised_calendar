@@ -1,5 +1,6 @@
 import './App.css';
-import {CalendarUI} from "./CalendarUI";
+import {CalendarMonthUI} from "./CalendarMonthUI";
+import {CalendarYearUI} from "./CalendarYearUI";
 
 function App() {
     const newStyle = { "float": "left"}
@@ -10,18 +11,26 @@ function App() {
       <h1>
         Welcome to the Custom Calendar
       </h1>
-        <CalendarUI
-            weekspan={6}
-            style={newStyle}
-        />
-        <CalendarUI
-            weekspan={7}
-            style={standardStyle}
-        />
-        <CalendarUI
-            weekspan={5}
-            style={newStyle}
-        />
+        <div style={newStyle}>
+            <CalendarYearUI>
+                weekspan={7}
+            </CalendarYearUI>
+        </div>
+        <div style={standardStyle}>
+
+            <CalendarMonthUI
+                weekspan={7}
+                isIndependent={true}
+            />
+            <CalendarMonthUI
+                weekspan={6}
+                isIndependent={true}
+            />
+            <CalendarMonthUI
+                weekspan={5}
+                isIndependent={true}
+            />
+        </div>
     </div>
   );
 }
